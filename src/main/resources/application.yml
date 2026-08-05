@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/negocio
+    username: root
+    password: oscarporta12
+
+    jpa:
+      hibernate:
+        ddl-auto: validate
+      show-sql: true
