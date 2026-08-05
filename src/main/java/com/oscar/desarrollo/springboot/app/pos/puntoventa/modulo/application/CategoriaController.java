@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/punto-venta")
+@RequestMapping("/punto-venta/categorias")
 @Slf4j
-public class PosController {
+public class CategoriaController {
 
     @Autowired
     CategoriaService categoria;
