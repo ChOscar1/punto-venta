@@ -2,6 +2,7 @@ package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application;
 
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Categoria;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.CategoriaModelRequest;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.CategoriaResponseModel;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.CategoriaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,19 +20,19 @@ public class CategoriaController {
     CategoriaService categoria;
 
     @PostMapping("/crear-categoria")
-    public ResponseEntity<Categoria> crear(@RequestBody CategoriaModelRequest request) {
+    public ResponseEntity<CategoriaResponseModel> crear(@RequestBody CategoriaModelRequest request) {
 
         return ResponseEntity.ok(categoria.guardar(request));
     }
 
     @GetMapping("/categoria/{id}")
-    public ResponseEntity<Categoria> buscarCategoriaId(@PathVariable Long id) {
+    public ResponseEntity<CategoriaResponseModel> buscarCategoriaId(@PathVariable Long id) {
 
         return ResponseEntity.ok(categoria.buscarById(id));
     }
 
     @PutMapping("/actualizar-categoria/{id}")
-    public ResponseEntity<Categoria> actualizar(@PathVariable Long id, @RequestBody CategoriaModelRequest request) {
+    public ResponseEntity<CategoriaResponseModel> actualizar(@PathVariable Long id, @RequestBody CategoriaModelRequest request) {
 
         return ResponseEntity.ok(categoria.actualizar(id, request));
     }
@@ -43,7 +44,7 @@ public class CategoriaController {
     }
 
     @GetMapping("/listar-categorias")
-    public ResponseEntity<List<Categoria>>listarCategorias() {
+    public ResponseEntity<List<CategoriaResponseModel>>listarCategorias() {
 
         return ResponseEntity.ok(categoria.listar());
     }

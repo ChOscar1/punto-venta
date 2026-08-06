@@ -3,18 +3,19 @@ package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incomin
 
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Categoria;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.CategoriaModelRequest;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.CategoriaResponseModel;
 
 import java.util.List;
 
 public interface CategoriaService {
 
-    Categoria guardar(CategoriaModelRequest categoriaModelRequest);
+    CategoriaResponseModel guardar(CategoriaModelRequest categoriaModelRequest);
 
-    Categoria buscarById(Long id);
+    CategoriaResponseModel buscarById(Long id);
 
-    Categoria actualizar(Long id, CategoriaModelRequest categoriaModelRequest);
+    CategoriaResponseModel actualizar(Long id, CategoriaModelRequest categoriaModelRequest);
 
     void eliminarById(Long id);
 
-    List<Categoria> listar();
+    List<CategoriaResponseModel> listar();
 }

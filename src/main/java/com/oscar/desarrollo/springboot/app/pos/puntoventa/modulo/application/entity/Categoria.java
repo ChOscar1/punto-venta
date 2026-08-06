@@ -15,4 +15,8 @@ public class Categoria {
 
     @NotBlank
     private String nombre;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vendedor_id")
+    private Vendedor vendedor;
 }

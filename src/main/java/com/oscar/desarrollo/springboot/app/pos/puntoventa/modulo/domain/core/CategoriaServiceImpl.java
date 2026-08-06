@@ -1,9 +1,13 @@
 package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.core;
 
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Categoria;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Vendedor;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mapper.CategoriaMapper;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.CategoriaModelRequest;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.CategoriaResponseModel;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.CategoriaService;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.CategoriaRepository;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.VendedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,28 +19,42 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Autowired
     CategoriaRepository categoriaRepository;
+    @Autowired
+    VendedorRepository vendedorRepository;
+    @Autowired
+    CategoriaMapper categoriaMapper;
 
     @Override
-    public Categoria guardar(CategoriaModelRequest categoriaModelRequest) {
-        Categoria categoria = new Categoria();
-        categoria.setNombre(categoriaModelRequest.getNombre());
+    public CategoriaResponseModel guardar(CategoriaModelRequest categoriaModelRequest) {
 
-        return categoriaRepository.save(categoria);
+        Vendedor vendedor = vendedorRepository.findById(categoriaModelRequest.getVendedorId()).orElseThrow(()
+                -> new RuntimeException("No se encontró el vendedor con el id: " + categoriaModelRequest.getVendedorId()));
+
+        Categoria categoria = categoriaMapper.mapearEntidad(categoriaModelRequest, vendedor);
+        Categoria categoriaGuardada = categoriaRepository.save(categoria);
+
+        return categoriaMapper.responseModel(categoriaGuardada);
     }
 
     @Override
-    public Categoria buscarById(Long id) {
-        return categoriaRepository.findById(id).orElseThrow(() -> new RuntimeException("categoria no encontrada"));
+    public CategoriaResponseModel buscarById(Long id) {
+        Categoria categoriaEncontrada = categoriaRepository.findById(id).orElseThrow(() -> new RuntimeException("categoria no encontrada"));
+        return categoriaMapper.responseModel(categoriaEncontrada);
     }
 
     @Override
-    @Transactional
-    public Categoria actualizar(Long id, CategoriaModelRequest categoriaModelRequest) {
+    public CategoriaResponseModel actualizar(Long id, CategoriaModelRequest categoriaModelRequest) {
+
         Categoria existente = categoriaRepository.findById(id).orElseThrow(() -> new RuntimeException("categoria no encontrada con el id: " + id));
 
-        existente.setNombre(categoriaModelRequest.getNombre());
+        Vendedor vendedor = vendedorRepository.findById(categoriaModelRequest.getVendedorId()).orElseThrow(()
+                -> new RuntimeException("No se encontró el vendedor con el id: " + categoriaModelRequest.getVendedorId()));
 
-        return categoriaRepository.save(existente);
+        categoriaMapper.actualizarEntidad(existente, categoriaModelRequest, vendedor);
+
+        Categoria categoriaGuardada = categoriaRepository.save(existente);
+
+        return categoriaMapper.responseModel(categoriaGuardada);
 
     }
 
@@ -48,7 +66,10 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
-    public List<Categoria> listar() {
-        return categoriaRepository.findAll();
+    public List<CategoriaResponseModel> listar() {
+        return categoriaRepository.findAll()
+                .stream()
+                .map(categoriaMapper::responseModel)
+                .toList();
     }
 }
