@@ -4,6 +4,7 @@ import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.ent
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Producto;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mapper.ProductoMapper;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.ProductoModelRequest;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.ProductoResponseModel;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.ProductoService;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.CategoriaRepository;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.ProductoRepository;
@@ -25,30 +26,34 @@ public class ProductoServiceImpl implements ProductoService {
     ProductoMapper productoMapper;
 
     @Override
-    public Producto guardar(ProductoModelRequest productoRequest) {
+    public ProductoResponseModel guardar(ProductoModelRequest productoRequest) {
 
         Categoria categoria = categoriaRepository.findById(productoRequest.getCategoriaId()).orElseThrow(() ->
                 new RuntimeException("No se encontro el id de la categoria: " + productoRequest.getCategoriaId()));
 
         Producto producto = productoMapper.mapearEntidad(productoRequest, categoria);
+        productoRepository.save(producto);
 
-        return productoRepository.save(producto);
+        return productoMapper.mapperResponse(producto);
     }
 
     @Override
-    public Producto buscarById(Long id) {
+    public ProductoResponseModel buscarById(Long id) {
+        Producto productoEncontrado = productoRepository.findById(id).orElseThrow(() -> new RuntimeException("No se encontro ningun registro con el id: " + id));
 
-        return productoRepository.findById(id).orElseThrow(() -> new RuntimeException("No se encontro ningun registro con el id: " + id));
+        return productoMapper.mapperResponse(productoEncontrado);
     }
 
     @Override
-    public Producto actualizar(Long id, ProductoModelRequest productoRequest) {
+    public ProductoResponseModel actualizar(Long id, ProductoModelRequest productoRequest) {
 
         Producto productoExiste = productoRepository.findById(id).orElseThrow(() -> new RuntimeException("No se encontro ningun registro con el id: " + id));
         Categoria categoriaExiste = categoriaRepository.findById(productoRequest.getCategoriaId()).orElseThrow(() ->
                 new RuntimeException("No se encontro el id de la categoria: " + productoRequest.getCategoriaId()));
 
-        return productoRepository.save(productoMapper.mapearEntidadActualizada(productoExiste, productoRequest, categoriaExiste));
+        productoMapper.mapearEntidadActualizada(productoExiste, productoRequest, categoriaExiste);
+        Producto prodGuardado = productoRepository.save(productoExiste);
+        return productoMapper.mapperResponse(prodGuardado);
     }
 
     @Override
@@ -58,7 +63,10 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public List<Producto> listar() {
-        return productoRepository.findAll();
+    public List<ProductoResponseModel> listar() {
+        return productoRepository.findAll()
+                .stream()
+                .map(productoMapper::mapperResponse)
+                .toList();
     }
 }
