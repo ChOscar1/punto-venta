@@ -6,6 +6,7 @@ import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.map
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.ProductoModelRequest;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.ProductoResponseModel;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.ProductoService;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.error.exception.ResourceNotFoundException;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.CategoriaRepository;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.ProductoRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,7 @@ public class ProductoServiceImpl implements ProductoService {
     public ProductoResponseModel guardar(ProductoModelRequest productoRequest) {
 
         Categoria categoria = categoriaRepository.findById(productoRequest.getCategoriaId()).orElseThrow(() ->
-                new RuntimeException("No se encontro el id de la categoria: " + productoRequest.getCategoriaId()));
+                new ResourceNotFoundException("No se encontro el id de la categoria: " + productoRequest.getCategoriaId()));
 
         Producto producto = productoMapper.mapearEntidad(productoRequest, categoria);
         productoRepository.save(producto);
@@ -39,7 +40,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public ProductoResponseModel buscarById(Long id) {
-        Producto productoEncontrado = productoRepository.findById(id).orElseThrow(() -> new RuntimeException("No se encontro ningun registro con el id: " + id));
+        Producto productoEncontrado = productoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No se encontro ningun registro con el id: " + id));
 
         return productoMapper.mapperResponse(productoEncontrado);
     }
@@ -47,9 +48,9 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public ProductoResponseModel actualizar(Long id, ProductoModelRequest productoRequest) {
 
-        Producto productoExiste = productoRepository.findById(id).orElseThrow(() -> new RuntimeException("No se encontro ningun registro con el id: " + id));
+        Producto productoExiste = productoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No se encontro ningun registro con el id: " + id));
         Categoria categoriaExiste = categoriaRepository.findById(productoRequest.getCategoriaId()).orElseThrow(() ->
-                new RuntimeException("No se encontro el id de la categoria: " + productoRequest.getCategoriaId()));
+                new ResourceNotFoundException("No se encontro el id de la categoria: " + productoRequest.getCategoriaId()));
 
         productoMapper.mapearEntidadActualizada(productoExiste, productoRequest, categoriaExiste);
         Producto prodGuardado = productoRepository.save(productoExiste);
@@ -58,7 +59,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public void eliminarById(Long id) {
-        Producto productoExiste = productoRepository.findById(id).orElseThrow(() -> new RuntimeException("No se encontro ningun registro con el id: " + id));
+        Producto productoExiste = productoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No se encontro ningun registro con el id: " + id));
         productoRepository.delete(productoExiste);
     }
 

@@ -5,6 +5,7 @@ import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.map
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VendedorModelRequest;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VendedorResponseModel;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.VendedorService;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.error.exception.ResourceNotFoundException;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.VendedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ public class VendedorServiceImpl implements VendedorService {
     public VendedorResponseModel buscarById(Long id) {
 
         Vendedor vendedorEncontrado = vendedorRepositoy.findById(id).orElseThrow(()
-                -> new RuntimeException("No se encontro ningun vendedor con el id: "+ id));
+                -> new ResourceNotFoundException("No se encontro ningun vendedor con el id: "+ id));
 
         return vendedorMapper.responseMapper(vendedorEncontrado);
     }
@@ -43,7 +44,7 @@ public class VendedorServiceImpl implements VendedorService {
     public VendedorResponseModel actualizar(Long id, VendedorModelRequest vendedorRequest) {
 
         Vendedor vendedorEncontrado = vendedorRepositoy.findById(id).orElseThrow(()
-                -> new RuntimeException("No se encontro ningun vendedor con el id: "+ id));
+                -> new ResourceNotFoundException("No se encontro ningun vendedor con el id: "+ id));
 
         Vendedor actualizado = vendedorMapper.mapearEntidadActualizada(vendedorEncontrado, vendedorRequest);
 
@@ -54,7 +55,7 @@ public class VendedorServiceImpl implements VendedorService {
     @Override
     public void eliminarById(Long id) {
         Vendedor vendedorEncontrado = vendedorRepositoy.findById(id).orElseThrow(()
-                -> new RuntimeException("No se encontro ningun vendedor con el id: "+ id));
+                -> new ResourceNotFoundException("No se encontro ningun vendedor con el id: "+ id));
 
         vendedorRepositoy.delete(vendedorEncontrado);
     }

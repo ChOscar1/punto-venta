@@ -9,6 +9,8 @@ import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mod
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VentaModelRequest;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VentaModelResponse;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.VentaService;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.error.exception.BussinessException;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.error.exception.ResourceNotFoundException;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.DetalleVentaRepository;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.ProductoRepository;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.VendedorRepository;
@@ -59,7 +61,7 @@ public class VentaServiceImpl implements VentaService {
     @Transactional(readOnly = true)
     public VentaModelResponse buscarById(Long id) {
 
-        Venta venta = ventaRepository.findById(id).orElseThrow(() -> new RuntimeException("No se encontró la venta con el id: " + id));
+        Venta venta = ventaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No se encontró la venta con el id: " + id));
 
         return ventaMapper.responseModel(venta);
     }
@@ -78,7 +80,7 @@ public class VentaServiceImpl implements VentaService {
 
         return vendedorRepository.findById(vendedorId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "No se encontró el vendedor con el id: " + vendedorId));
     }
 
@@ -105,13 +107,13 @@ public class VentaServiceImpl implements VentaService {
 
     private Producto obtenerProducto(Long productoId) {
 
-        return prodRepository.findById(productoId).orElseThrow(() -> new RuntimeException("No se encontró el producto con el id: " + productoId));
+        return prodRepository.findById(productoId).orElseThrow(() -> new ResourceNotFoundException("No se encontró el producto con el id: " + productoId));
     }
 
     private void validarProducto(Producto producto, Vendedor vendedor) {
 
         if (!producto.getActivo()) {
-            throw new RuntimeException("El producto no está activo: " + producto.getNombre());
+            throw new BussinessException("El producto no está activo: " + producto.getNombre());
         }
 
         if (!producto.getCategoria()
@@ -119,7 +121,7 @@ public class VentaServiceImpl implements VentaService {
                 .getId()
                 .equals(vendedor.getId())) {
 
-            throw new RuntimeException("El vendedor " + vendedor.getNombre() + " no puede vender el producto: " + producto.getNombre());
+            throw new BussinessException("El vendedor " + vendedor.getNombre() + " no puede vender el producto: " + producto.getNombre());
         }
     }
 

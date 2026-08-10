@@ -7,9 +7,9 @@ import lombok.Data;
 @Data
 public class CategoriaModelRequest {
 
-    @NotBlank
+    @NotBlank(message = "No debe estar vacio")
     private String nombre;
 
-    @NotNull
+    @NotNull(message = "No debe ser nulo")
     private Long vendedorId;
 }

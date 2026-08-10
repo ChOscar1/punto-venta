@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class VendedorModelRequest {
 
-    @NotBlank
+    @NotBlank(message = "No debe estar vacio")
     private String nombre;
 }

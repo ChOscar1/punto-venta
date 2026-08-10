@@ -10,12 +10,12 @@ import java.util.List;
 @Data
 public class VentaModelRequest {
 
-    @NotNull
+    @NotNull(message = "No debe ser nulo")
     private Long vendedorId;
 
-    @NotBlank
+    @NotBlank(message = "No debe estar vacio")
     private String metodoPago;
 
-    @NotEmpty
+    @NotEmpty(message = "No debe estar vacio")
     private List<DetalleVentaModelRequest> productos;
 }

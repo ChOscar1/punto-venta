@@ -3,6 +3,7 @@ package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.ProductoModelRequest;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.ProductoResponseModel;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.ProductoService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class ProductoController {
     ProductoService producto;
 
     @PostMapping("/crear-producto")
-    public ResponseEntity<ProductoResponseModel> crearProducto(@RequestBody ProductoModelRequest request) {
+    public ResponseEntity<ProductoResponseModel> crearProducto(@RequestBody @Valid ProductoModelRequest request) {
 
         return ResponseEntity.ok(producto.guardar(request));
     }
@@ -31,7 +32,7 @@ public class ProductoController {
     }
 
     @PutMapping("/actualizar-producto/{id}")
-    public ResponseEntity<ProductoResponseModel> actualizarProducto(@PathVariable Long id, @RequestBody ProductoModelRequest request) {
+    public ResponseEntity<ProductoResponseModel> actualizarProducto(@PathVariable Long id, @RequestBody @Valid ProductoModelRequest request) {
 
         return ResponseEntity.ok(producto.actualizar(id, request));
     }

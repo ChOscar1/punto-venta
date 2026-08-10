@@ -7,15 +7,15 @@ import lombok.Data;
 @Data
 public class ProductoModelRequest {
 
-    @NotBlank
+    @NotBlank(message = "No debe estar vacio")
     private String nombre;
 
-    @NotNull
+    @NotNull(message = "No debe ser nulo")
     private Long categoriaId;
 
-    @NotNull
+    @NotNull(message = "No debe ser nulo")
     private Integer precio;
 
-    @NotNull
+    @NotNull(message = "No debe ser nulo")
     private Boolean activo;
 }

@@ -4,6 +4,7 @@ import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.ent
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.CategoriaModelRequest;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.CategoriaResponseModel;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.CategoriaService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class CategoriaController {
     CategoriaService categoria;
 
     @PostMapping("/crear-categoria")
-    public ResponseEntity<CategoriaResponseModel> crear(@RequestBody CategoriaModelRequest request) {
+    public ResponseEntity<CategoriaResponseModel> crear(@RequestBody @Valid CategoriaModelRequest request) {
 
         return ResponseEntity.ok(categoria.guardar(request));
     }
@@ -32,7 +33,7 @@ public class CategoriaController {
     }
 
     @PutMapping("/actualizar-categoria/{id}")
-    public ResponseEntity<CategoriaResponseModel> actualizar(@PathVariable Long id, @RequestBody CategoriaModelRequest request) {
+    public ResponseEntity<CategoriaResponseModel> actualizar(@PathVariable Long id, @RequestBody @Valid CategoriaModelRequest request) {
 
         return ResponseEntity.ok(categoria.actualizar(id, request));
     }

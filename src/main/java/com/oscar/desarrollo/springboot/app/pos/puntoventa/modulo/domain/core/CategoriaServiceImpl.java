@@ -6,6 +6,7 @@ import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.map
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.CategoriaModelRequest;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.CategoriaResponseModel;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.CategoriaService;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.error.exception.ResourceNotFoundException;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.CategoriaRepository;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.VendedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     public CategoriaResponseModel guardar(CategoriaModelRequest categoriaModelRequest) {
 
         Vendedor vendedor = vendedorRepository.findById(categoriaModelRequest.getVendedorId()).orElseThrow(()
-                -> new RuntimeException("No se encontró el vendedor con el id: " + categoriaModelRequest.getVendedorId()));
+                -> new ResourceNotFoundException("No se encontró el vendedor con el id: " + categoriaModelRequest.getVendedorId()));
 
         Categoria categoria = categoriaMapper.mapearEntidad(categoriaModelRequest, vendedor);
         Categoria categoriaGuardada = categoriaRepository.save(categoria);
@@ -37,17 +38,17 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public CategoriaResponseModel buscarById(Long id) {
-        Categoria categoriaEncontrada = categoriaRepository.findById(id).orElseThrow(() -> new RuntimeException("categoria no encontrada"));
+        Categoria categoriaEncontrada = categoriaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("categoria no encontrada"));
         return categoriaMapper.responseModel(categoriaEncontrada);
     }
 
     @Override
     public CategoriaResponseModel actualizar(Long id, CategoriaModelRequest categoriaModelRequest) {
 
-        Categoria existente = categoriaRepository.findById(id).orElseThrow(() -> new RuntimeException("categoria no encontrada con el id: " + id));
+        Categoria existente = categoriaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("categoria no encontrada con el id: " + id));
 
         Vendedor vendedor = vendedorRepository.findById(categoriaModelRequest.getVendedorId()).orElseThrow(()
-                -> new RuntimeException("No se encontró el vendedor con el id: " + categoriaModelRequest.getVendedorId()));
+                -> new ResourceNotFoundException("No se encontró el vendedor con el id: " + categoriaModelRequest.getVendedorId()));
 
         categoriaMapper.actualizarEntidad(existente, categoriaModelRequest, vendedor);
 
@@ -59,7 +60,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public void eliminarById(Long id) {
-        Categoria existente = categoriaRepository.findById(id).orElseThrow(() -> new RuntimeException("categoria no encontrada"));
+        Categoria existente = categoriaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("categoria no encontrada"));
 
         categoriaRepository.delete(existente);
     }

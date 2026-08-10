@@ -7,10 +7,10 @@ import lombok.Data;
 @Data
 public class DetalleVentaModelRequest {
 
-    @NotNull
+    @NotNull(message = "No debe ser nulo")
     private Long productoId;
 
-    @NotNull
-    @Min(1)
+    @NotNull(message = "No debe ser nulo")
+    @Min(value = 1, message = "La cantidad debe ser mayor o igual a 1")
     private Integer cantidad;
 }
