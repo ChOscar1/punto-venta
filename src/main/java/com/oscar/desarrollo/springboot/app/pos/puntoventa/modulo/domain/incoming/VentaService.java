@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface VentaService {
 
-    VentaModelResponse registrarVenta(VentaModelRequest request);
+    List<VentaModelResponse> registrarVenta(VentaModelRequest request);
 
     VentaModelResponse buscarById(Long id);
 

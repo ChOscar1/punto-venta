@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class VentaServiceImpl implements VentaService {
@@ -38,23 +40,59 @@ public class VentaServiceImpl implements VentaService {
 
     @Override
     @Transactional
-    public VentaModelResponse registrarVenta(VentaModelRequest request) {
+    public List<VentaModelResponse> registrarVenta(VentaModelRequest request) {
 
-        Vendedor vendedor = obtenerVendedor(request.getVendedorId());
+        Map<Long, Vendedor> vendedores = new LinkedHashMap<>();
 
-        List<DetalleVenta> detalles = crearDetalles(request, vendedor);
+        Map<Long, List<DetalleVenta>> detallesPorVendedor = new LinkedHashMap<>();
 
-        int subtotalVenta = calcularSubtotal(detalles);
 
-        Venta venta = ventaMapper.mapearVenta(request, vendedor, subtotalVenta);
+        for (DetalleVentaModelRequest item : request.getProductos()) {
 
-        Venta ventaGuardada = ventaRepository.save(venta);
+            Producto producto = obtenerProducto(item.getProductoId());
 
-        guardarDetalles(detalles, ventaGuardada);
+            validarProducto(producto);
 
-        ventaGuardada.setDetalles(detalles);
+            Vendedor vendedor = producto.getCategoria().getVendedor();
 
-        return ventaMapper.responseModel(ventaGuardada);
+            vendedores.put(vendedor.getId(), vendedor);
+
+
+            int subtotalProducto = producto.getPrecio() * item.getCantidad();
+
+
+            DetalleVenta detalle = ventaMapper.detalleVentaMapper(producto, item, subtotalProducto);
+
+
+            detallesPorVendedor.computeIfAbsent(vendedor.getId(), key -> new ArrayList<>())
+                    .add(detalle);
+        }
+
+
+        List<VentaModelResponse> respuestas = new ArrayList<>();
+
+
+        for (Map.Entry<Long, List<DetalleVenta>> entry : detallesPorVendedor.entrySet()) {
+
+            Vendedor vendedor = vendedores.get(entry.getKey());
+
+            List<DetalleVenta> detalles = entry.getValue();
+
+            int subtotalVenta = calcularSubtotal(detalles);
+
+            Venta venta = ventaMapper.mapearVenta(request, vendedor, subtotalVenta);
+
+            Venta ventaGuardada = ventaRepository.save(venta);
+
+
+            guardarDetalles(detalles, ventaGuardada);
+
+            ventaGuardada.setDetalles(detalles);
+
+            respuestas.add(ventaMapper.responseModel(ventaGuardada));
+        }
+
+        return respuestas;
     }
 
     @Override
@@ -76,52 +114,15 @@ public class VentaServiceImpl implements VentaService {
                 .toList();
     }
 
-    private Vendedor obtenerVendedor(Long vendedorId) {
-
-        return vendedorRepository.findById(vendedorId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "No se encontró el vendedor con el id: " + vendedorId));
-    }
-
-    private List<DetalleVenta> crearDetalles(VentaModelRequest request, Vendedor vendedor) {
-
-        List<DetalleVenta> detalles = new ArrayList<>();
-
-        for (DetalleVentaModelRequest item : request.getProductos()) {
-
-            Producto producto = obtenerProducto(item.getProductoId());
-
-            validarProducto(producto, vendedor);
-
-            int subtotalProducto =
-                    producto.getPrecio() * item.getCantidad();
-
-            DetalleVenta detalle = ventaMapper.detalleVentaMapper(producto, item, subtotalProducto);
-
-            detalles.add(detalle);
-        }
-
-        return detalles;
-    }
-
     private Producto obtenerProducto(Long productoId) {
 
         return prodRepository.findById(productoId).orElseThrow(() -> new ResourceNotFoundException("No se encontró el producto con el id: " + productoId));
     }
 
-    private void validarProducto(Producto producto, Vendedor vendedor) {
+    private void validarProducto(Producto producto) {
 
         if (!producto.getActivo()) {
             throw new BussinessException("El producto no está activo: " + producto.getNombre());
-        }
-
-        if (!producto.getCategoria()
-                .getVendedor()
-                .getId()
-                .equals(vendedor.getId())) {
-
-            throw new BussinessException("El vendedor " + vendedor.getNombre() + " no puede vender el producto: " + producto.getNombre());
         }
     }
 

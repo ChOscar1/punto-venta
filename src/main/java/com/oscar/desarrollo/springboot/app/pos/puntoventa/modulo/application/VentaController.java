@@ -20,7 +20,7 @@ public class VentaController {
     VentaService ventaService;
 
     @PostMapping("/crear-venta")
-    public ResponseEntity<VentaModelResponse> registrarVenta(@RequestBody @Valid VentaModelRequest request) {
+    public ResponseEntity<List<VentaModelResponse>> registrarVenta(@RequestBody @Valid VentaModelRequest request) {
 
         return ResponseEntity.ok(ventaService.registrarVenta(request));
     }
