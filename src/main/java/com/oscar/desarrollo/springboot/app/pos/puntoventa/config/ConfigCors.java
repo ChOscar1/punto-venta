@@ -12,7 +12,7 @@ public class ConfigCors implements WebMvcConfigurer {
 
         registry
                 .addMapping("/**")
-                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins("http://localhost:5173", "https://punto-venta-front-gwkb.onrender.com")
                 .allowedMethods(
                         "GET",
                         "POST",
