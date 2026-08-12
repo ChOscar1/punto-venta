@@ -11,17 +11,6 @@ public class PuntoVentaApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(PuntoVentaApplication.class, args);
-
-        ZoneId zonaMexico = ZoneId.of("America/Mexico_City");
-
-        System.out.println(
-                "Hora servidor: " + LocalDateTime.now()
-        );
-
-        System.out.println(
-                "Hora México: " +
-                        LocalDateTime.now(zonaMexico)
-        );
     }
 
 }

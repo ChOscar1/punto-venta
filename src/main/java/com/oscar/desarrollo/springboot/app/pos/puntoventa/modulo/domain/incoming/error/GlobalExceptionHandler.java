@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
 
         ErrorModelResponse response = ErrorModelResponse.builder()
                 .error("UNAUTHORIZED")
-                .message(ex.getMessage())
+                .message("error: Usuario o contraseña incorrectos")
                 .timestamp(LocalDateTime.now())
                 .build();
 
