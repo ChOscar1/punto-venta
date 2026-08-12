@@ -8,6 +8,7 @@ import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -20,7 +21,7 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorModelResponse> manejarNotFounf(ResourceNotFoundException ex) {
+    public ResponseEntity<ErrorModelResponse> manejarNotFound(ResourceNotFoundException ex) {
 
         ErrorModelResponse response = ErrorModelResponse.builder()
                 .error("NOT_FOUND")
@@ -32,7 +33,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BussinessException.class)
-    public ResponseEntity<ErrorModelResponse> manejarNotFounf(BussinessException ex) {
+    public ResponseEntity<ErrorModelResponse> manejarReglasNegocio(BussinessException ex) {
 
         ErrorModelResponse response = ErrorModelResponse.builder()
                 .error("Error_ReglaNegocio")
@@ -44,8 +45,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Error422Model> manejarValidaciones(
-            MethodArgumentNotValidException ex) {
+    public ResponseEntity<Error422Model> manejarValidaciones(MethodArgumentNotValidException ex) {
 
         List<CampoErrorResponse> errores = ex.getBindingResult()
                 .getFieldErrors()
@@ -66,5 +66,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorModelResponse> manejarNotFound(BadCredentialsException ex) {
+
+        ErrorModelResponse response = ErrorModelResponse.builder()
+                .error("UNAUTHORIZED")
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 }
