@@ -11,6 +11,7 @@ import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mod
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Component
 public class VentaMapper {
@@ -19,7 +20,7 @@ public class VentaMapper {
 
         Venta venta = new Venta();
         venta.setMetodoPago(request.getMetodoPago());
-        venta.setFecha(LocalDateTime.now());
+        venta.setFecha(LocalDateTime.now(ZoneId.of("America/Mexico_City")));
         venta.setVendedor(vendedor);
         venta.setSubtotal(total);
         venta.setDescuento(0);
