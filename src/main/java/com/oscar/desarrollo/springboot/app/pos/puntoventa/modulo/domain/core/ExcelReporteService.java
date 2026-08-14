@@ -40,9 +40,7 @@ public class ExcelReporteService {
         }
     }
 
-    private void crearHojaDetalle(
-            Workbook workbook,
-            List<Venta> ventas) {
+    private void crearHojaDetalle(Workbook workbook, List<Venta> ventas) {
 
         Sheet sheet = workbook.createSheet("Detalle Ventas");
 
@@ -56,58 +54,43 @@ public class ExcelReporteService {
         encabezado.createCell(5).setCellValue("Cantidad");
         encabezado.createCell(6).setCellValue("Precio Unitario");
         encabezado.createCell(7).setCellValue("Subtotal");
-        encabezado.createCell(8).setCellValue("Método Pago");
+        encabezado.createCell(8).setCellValue("Descuento");
+        encabezado.createCell(9).setCellValue("Total Venta");
+        encabezado.createCell(10).setCellValue("Método Pago");
 
         int fila = 1;
 
         for (Venta venta : ventas) {
 
+            boolean primeraFilaVenta = true;
+
             for (DetalleVenta detalle : venta.getDetalles()) {
 
                 Row row = sheet.createRow(fila++);
 
-                row.createCell(0)
-                        .setCellValue(venta.getId());
+                row.createCell(0).setCellValue(venta.getId());
 
-                row.createCell(1)
-                        .setCellValue(venta.getFecha().toString());
+                row.createCell(1).setCellValue(venta.getFecha().toString());
 
-                row.createCell(2)
-                        .setCellValue(
-                                venta.getVendedor().getNombre()
-                        );
+                row.createCell(2).setCellValue(venta.getVendedor().getNombre());
 
-                row.createCell(3)
-                        .setCellValue(
-                                detalle.getProducto().getNombre()
-                        );
+                row.createCell(3).setCellValue(detalle.getProducto().getNombre());
 
-                row.createCell(4)
-                        .setCellValue(
-                                detalle.getProducto()
-                                        .getCategoria()
-                                        .getNombre()
-                        );
+                row.createCell(4).setCellValue(detalle.getProducto().getCategoria().getNombre());
 
-                row.createCell(5)
-                        .setCellValue(
-                                detalle.getCantidad()
-                        );
+                row.createCell(5).setCellValue(detalle.getCantidad());
 
-                row.createCell(6)
-                        .setCellValue(
-                                detalle.getPrecioUnitario()
-                        );
+                row.createCell(6).setCellValue(detalle.getPrecioUnitario());
 
-                row.createCell(7)
-                        .setCellValue(
-                                detalle.getSubtotal()
-                        );
+                row.createCell(7).setCellValue(detalle.getSubtotal());
 
-                row.createCell(8)
-                        .setCellValue(
-                                venta.getMetodoPago()
-                        );
+                if (primeraFilaVenta) {
+                    row.createCell(8).setCellValue(venta.getDescuento());
+                    row.createCell(9).setCellValue(venta.getTotal());
+                    row.createCell(10).setCellValue(venta.getMetodoPago());
+
+                    primeraFilaVenta = false;
+                }
             }
         }
 
@@ -116,60 +99,45 @@ public class ExcelReporteService {
         }
     }
 
-    private void crearHojaResumen(
-            Workbook workbook,
-            List<Venta> ventas) {
+    private void crearHojaResumen(Workbook workbook, List<Venta> ventas) {
 
         Sheet sheet = workbook.createSheet("Resumen");
 
-        Map<String, Integer> totalPorVendedor =
-                new HashMap<>();
+        Map<String, Integer> totalPorVendedor = new HashMap<>();
 
         for (Venta venta : ventas) {
 
-            String vendedor =
-                    venta.getVendedor().getNombre();
+            String vendedor = venta.getVendedor().getNombre();
 
-            totalPorVendedor.merge(
-                    vendedor,
-                    venta.getTotal(),
-                    Integer::sum
-            );
+            totalPorVendedor.merge(vendedor, venta.getTotal(), Integer::sum);
         }
 
         Row encabezado = sheet.createRow(0);
 
-        encabezado.createCell(0)
-                .setCellValue("Vendedor");
+        encabezado.createCell(0).setCellValue("Vendedor");
 
-        encabezado.createCell(1)
-                .setCellValue("Total Vendido");
+        encabezado.createCell(1).setCellValue("Total Vendido");
 
         int fila = 1;
 
         int totalGeneral = 0;
 
-        for (Map.Entry<String, Integer> entry
-                : totalPorVendedor.entrySet()) {
+        for (Map.Entry<String, Integer> entry : totalPorVendedor.entrySet()) {
 
             Row row = sheet.createRow(fila++);
 
-            row.createCell(0)
-                    .setCellValue(entry.getKey());
+            row.createCell(0).setCellValue(entry.getKey());
 
-            row.createCell(1)
-                    .setCellValue(entry.getValue());
+            row.createCell(1).setCellValue(entry.getValue());
 
             totalGeneral += entry.getValue();
         }
 
         Row total = sheet.createRow(fila);
 
-        total.createCell(0)
-                .setCellValue("TOTAL GENERAL");
+        total.createCell(0).setCellValue("TOTAL GENERAL");
 
-        total.createCell(1)
-                .setCellValue(totalGeneral);
+        total.createCell(1).setCellValue(totalGeneral);
 
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);

@@ -28,8 +28,7 @@ public class ReporteServiceImpl implements ReporteService {
                 .atStartOfDay()
                 .minusNanos(1);
 
-        List<Venta> ventas =
-                ventaRepository.findByFechaBetween(inicio, fin);
+        List<Venta> ventas = ventaRepository.findByFechaBetween(inicio, fin);
 
         return excelReporteService.generarExcel(ventas);
     }

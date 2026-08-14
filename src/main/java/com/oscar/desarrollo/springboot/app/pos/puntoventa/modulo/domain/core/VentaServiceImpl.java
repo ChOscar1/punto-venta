@@ -13,7 +13,6 @@ import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.error.exception.ResourceNotFoundException;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.DetalleVentaRepository;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.ProductoRepository;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.VendedorRepository;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.VentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,65 +33,15 @@ public class VentaServiceImpl implements VentaService {
     @Autowired
     ProductoRepository prodRepository;
     @Autowired
-    VendedorRepository vendedorRepository;
-    @Autowired
     VentaMapper ventaMapper;
 
     @Override
     @Transactional
     public List<VentaModelResponse> registrarVenta(VentaModelRequest request) {
 
-        Map<Long, Vendedor> vendedores = new LinkedHashMap<>();
+        Map<Long, List<DetalleVenta>> detallesPorVendedor = agruparDetallesPorVendedor(request);
 
-        Map<Long, List<DetalleVenta>> detallesPorVendedor = new LinkedHashMap<>();
-
-
-        for (DetalleVentaModelRequest item : request.getProductos()) {
-
-            Producto producto = obtenerProducto(item.getProductoId());
-
-            validarProducto(producto);
-
-            Vendedor vendedor = producto.getCategoria().getVendedor();
-
-            vendedores.put(vendedor.getId(), vendedor);
-
-
-            int subtotalProducto = producto.getPrecio() * item.getCantidad();
-
-
-            DetalleVenta detalle = ventaMapper.detalleVentaMapper(producto, item, subtotalProducto);
-
-
-            detallesPorVendedor.computeIfAbsent(vendedor.getId(), key -> new ArrayList<>())
-                    .add(detalle);
-        }
-
-
-        List<VentaModelResponse> respuestas = new ArrayList<>();
-
-
-        for (Map.Entry<Long, List<DetalleVenta>> entry : detallesPorVendedor.entrySet()) {
-
-            Vendedor vendedor = vendedores.get(entry.getKey());
-
-            List<DetalleVenta> detalles = entry.getValue();
-
-            int subtotalVenta = calcularSubtotal(detalles);
-
-            Venta venta = ventaMapper.mapearVenta(request, vendedor, subtotalVenta);
-
-            Venta ventaGuardada = ventaRepository.save(venta);
-
-
-            guardarDetalles(detalles, ventaGuardada);
-
-            ventaGuardada.setDetalles(detalles);
-
-            respuestas.add(ventaMapper.responseModel(ventaGuardada));
-        }
-
-        return respuestas;
+        return crearVentas(request, detallesPorVendedor);
     }
 
     @Override
@@ -112,6 +61,60 @@ public class VentaServiceImpl implements VentaService {
                 .stream()
                 .map(ventaMapper::responseModel)
                 .toList();
+    }
+
+    private Map<Long, List<DetalleVenta>> agruparDetallesPorVendedor(VentaModelRequest request) {
+
+        Map<Long, List<DetalleVenta>> detallesPorVendedor = new LinkedHashMap<>();
+
+        for (DetalleVentaModelRequest item : request.getProductos()) {
+
+            Producto producto = obtenerProducto(item.getProductoId());
+
+            validarProducto(producto);
+
+            Vendedor vendedor = producto.getCategoria().getVendedor();
+
+            int subtotalProducto = producto.getPrecio() * item.getCantidad();
+
+            DetalleVenta detalle = ventaMapper.detalleVentaMapper(producto, item, subtotalProducto);
+
+            detallesPorVendedor.computeIfAbsent(vendedor.getId(), key -> new ArrayList<>())
+                    .add(detalle);
+        }
+
+        return detallesPorVendedor;
+    }
+
+    private List<VentaModelResponse> crearVentas(VentaModelRequest request, Map<Long, List<DetalleVenta>> detallesPorVendedor) {
+
+        List<VentaModelResponse> respuestas = new ArrayList<>();
+
+        for (List<DetalleVenta> detalles : detallesPorVendedor.values()) {
+
+            Vendedor vendedor = detalles.get(0)
+                    .getProducto()
+                    .getCategoria()
+                    .getVendedor();
+
+            int subtotalVenta = calcularSubtotal(detalles);
+
+            int descuento = calcularDescuento(request, vendedor, subtotalVenta);
+
+            int total = subtotalVenta - descuento;
+
+            Venta venta = ventaMapper.mapearVenta(request, vendedor, subtotalVenta, total, descuento);
+
+            Venta ventaGuardada = ventaRepository.save(venta);
+
+            guardarDetalles(detalles, ventaGuardada);
+
+            ventaGuardada.setDetalles(detalles);
+
+            respuestas.add(ventaMapper.responseModel(ventaGuardada));
+        }
+
+        return respuestas;
     }
 
     private Producto obtenerProducto(Long productoId) {
@@ -140,6 +143,29 @@ public class VentaServiceImpl implements VentaService {
         }
 
         detalleRepository.saveAll(detalles);
+    }
+
+    private int calcularDescuento(VentaModelRequest request, Vendedor vendedor, int subtotal) {
+
+        if (request.getVendedorDescuentoId() == null) {
+            return 0;
+        }
+
+        if (!request.getVendedorDescuentoId().equals(vendedor.getId())) {
+            return 0;
+        }
+
+        int descuento = (request.getDescuento() != null ? request.getDescuento() : 0);
+
+        if (descuento < 0) {
+            throw new BussinessException("El descuento no puede ser negativo");
+        }
+
+        if (descuento > subtotal) {
+            throw new BussinessException("El descuento no puede ser mayor al subtotal");
+        }
+
+        return descuento;
     }
 }
 

@@ -16,15 +16,15 @@ import java.time.ZoneId;
 @Component
 public class VentaMapper {
 
-    public Venta mapearVenta(VentaModelRequest request, Vendedor vendedor, int total) {
+    public Venta mapearVenta(VentaModelRequest request, Vendedor vendedor, int subTotal, int totalVenta, int descuento) {
 
         Venta venta = new Venta();
         venta.setMetodoPago(request.getMetodoPago());
         venta.setFecha(LocalDateTime.now(ZoneId.of("America/Mexico_City")));
         venta.setVendedor(vendedor);
-        venta.setSubtotal(total);
-        venta.setDescuento(0);
-        venta.setTotal(total);
+        venta.setSubtotal(subTotal);
+        venta.setDescuento(descuento);
+        venta.setTotal(totalVenta);
         return venta;
     }
 
