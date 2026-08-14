@@ -1,23 +1,25 @@
 package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.core;
 
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.DetalleVenta;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Producto;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Vendedor;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Venta;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.*;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mapper.PedidoMapper;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mapper.VentaMapper;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.DetalleVentaModelRequest;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.PedidoModelResponse;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VentaModelRequest;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VentaModelResponse;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.VentaService;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.error.exception.BussinessException;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.error.exception.ResourceNotFoundException;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.DetalleVentaRepository;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.PedidoRepository;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.ProductoRepository;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.infraestructure.VentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,34 +36,58 @@ public class VentaServiceImpl implements VentaService {
     ProductoRepository prodRepository;
     @Autowired
     VentaMapper ventaMapper;
+    @Autowired
+    PedidoRepository pedidoRepository;
+    @Autowired
+    PedidoMapper pedidoMapper;
 
     @Override
     @Transactional
-    public List<VentaModelResponse> registrarVenta(VentaModelRequest request) {
+    public PedidoModelResponse registrarVenta(VentaModelRequest request) {
+
+        Pedido pedido = new Pedido();
+
+        pedido.setNombreCliente(request.getNombreCliente());
+        pedido.setFecha(
+                LocalDateTime.now(
+                        ZoneId.of("America/Mexico_City")
+                )
+        );
+        pedido.setEstado("PENDIENTE");
+
+        Pedido pedidoGuardado = pedidoRepository.save(pedido);
 
         Map<Long, List<DetalleVenta>> detallesPorVendedor = agruparDetallesPorVendedor(request);
 
-        return crearVentas(request, detallesPorVendedor);
+        crearVentas(request, detallesPorVendedor, pedidoGuardado);
+
+        return pedidoMapper.responseModel(pedidoGuardado);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public VentaModelResponse buscarById(Long id) {
+/*    @Override
+    @Transactional
+    public VentaModelResponse entregarVenta(Long id) {
 
         Venta venta = ventaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No se encontró la venta con el id: " + id));
 
-        return ventaMapper.responseModel(venta);
+        if (venta.getEstado().equals("Entregada")) {
+            throw new BussinessException("La venta ya fue entregada");
+        }
+
+        venta.setEstado("Entregada");
+        Venta guardarVenta = ventaRepository.save(venta);
+        return ventaMapper.responseModel(guardarVenta);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<VentaModelResponse> listar() {
+    public List<VentaModelResponse> listarPendientes() {
 
-        return ventaRepository.findAll()
+        return ventaRepository.findByEstado("Pendiente")
                 .stream()
                 .map(ventaMapper::responseModel)
                 .toList();
-    }
+    }*/
 
     private Map<Long, List<DetalleVenta>> agruparDetallesPorVendedor(VentaModelRequest request) {
 
@@ -86,7 +112,7 @@ public class VentaServiceImpl implements VentaService {
         return detallesPorVendedor;
     }
 
-    private List<VentaModelResponse> crearVentas(VentaModelRequest request, Map<Long, List<DetalleVenta>> detallesPorVendedor) {
+    private List<VentaModelResponse> crearVentas(VentaModelRequest request, Map<Long, List<DetalleVenta>> detallesPorVendedor, Pedido pedidoGuardado) {
 
         List<VentaModelResponse> respuestas = new ArrayList<>();
 
@@ -103,13 +129,15 @@ public class VentaServiceImpl implements VentaService {
 
             int total = subtotalVenta - descuento;
 
-            Venta venta = ventaMapper.mapearVenta(request, vendedor, subtotalVenta, total, descuento);
+            Venta venta = ventaMapper.mapearVenta(request, vendedor, pedidoGuardado, subtotalVenta, total, descuento);
 
             Venta ventaGuardada = ventaRepository.save(venta);
 
             guardarDetalles(detalles, ventaGuardada);
 
             ventaGuardada.setDetalles(detalles);
+
+            pedidoGuardado.getVentas().add(ventaGuardada);
 
             respuestas.add(ventaMapper.responseModel(ventaGuardada));
         }

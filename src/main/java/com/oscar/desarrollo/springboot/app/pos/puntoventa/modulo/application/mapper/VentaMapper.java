@@ -1,9 +1,6 @@
 package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mapper;
 
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.DetalleVenta;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Producto;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Vendedor;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Venta;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.*;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.DetalleVentaModelRequest;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.DetalleVentaResponse;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VentaModelRequest;
@@ -16,11 +13,12 @@ import java.time.ZoneId;
 @Component
 public class VentaMapper {
 
-    public Venta mapearVenta(VentaModelRequest request, Vendedor vendedor, int subTotal, int totalVenta, int descuento) {
+    public Venta mapearVenta(VentaModelRequest request, Vendedor vendedor, Pedido pedido, int subTotal, int totalVenta, int descuento) {
 
         Venta venta = new Venta();
         venta.setMetodoPago(request.getMetodoPago());
         venta.setFecha(LocalDateTime.now(ZoneId.of("America/Mexico_City")));
+        venta.setPedido(pedido);
         venta.setVendedor(vendedor);
         venta.setSubtotal(subTotal);
         venta.setDescuento(descuento);

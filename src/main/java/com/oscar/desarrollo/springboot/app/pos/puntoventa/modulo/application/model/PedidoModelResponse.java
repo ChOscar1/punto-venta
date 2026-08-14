@@ -6,23 +6,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class VentaModelResponse {
+public class PedidoModelResponse {
 
     private Long id;
-
-    private String nombreCliente;
-
     private LocalDateTime fecha;
-
-    private String vendedor;
-
-    private Integer subtotal;
-
-    private Integer descuento;
-
+    private String nombreCliente;
+    private String estado;
+    private List<VentaModelResponse> ventas;
     private Integer total;
-
-    private String metodoPago;
-
-    private List<DetalleVentaResponse> productos;
 }

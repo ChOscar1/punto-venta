@@ -10,7 +10,6 @@ import java.util.List;
 @Repository
 public interface VentaRepository extends JpaRepository<Venta, Long> {
 
-    List<Venta> findByFechaBetween(
-            LocalDateTime inicio, LocalDateTime fin
-    );
+    List<Venta> findByFechaBetween(LocalDateTime inicio, LocalDateTime fin);
+
 }

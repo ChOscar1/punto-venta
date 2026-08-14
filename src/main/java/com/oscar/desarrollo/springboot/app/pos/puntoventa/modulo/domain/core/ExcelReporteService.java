@@ -46,55 +46,90 @@ public class ExcelReporteService {
 
         Row encabezado = sheet.createRow(0);
 
-        encabezado.createCell(0).setCellValue("ID Venta");
-        encabezado.createCell(1).setCellValue("Fecha");
-        encabezado.createCell(2).setCellValue("Vendedor");
-        encabezado.createCell(3).setCellValue("Producto");
-        encabezado.createCell(4).setCellValue("Categoría");
-        encabezado.createCell(5).setCellValue("Cantidad");
-        encabezado.createCell(6).setCellValue("Precio Unitario");
-        encabezado.createCell(7).setCellValue("Subtotal");
-        encabezado.createCell(8).setCellValue("Descuento");
-        encabezado.createCell(9).setCellValue("Total Venta");
-        encabezado.createCell(10).setCellValue("Método Pago");
+        encabezado.createCell(0).setCellValue("ID Pedido");
+        encabezado.createCell(1).setCellValue("ID Venta");
+        encabezado.createCell(2).setCellValue("Fecha");
+        encabezado.createCell(3).setCellValue("Cliente");
+        encabezado.createCell(4).setCellValue("Vendedor");
+        encabezado.createCell(5).setCellValue("Producto");
+        encabezado.createCell(6).setCellValue("Categoría");
+        encabezado.createCell(7).setCellValue("Cantidad");
+        encabezado.createCell(8).setCellValue("Precio Unitario");
+        encabezado.createCell(9).setCellValue("Subtotal Producto");
+        encabezado.createCell(10).setCellValue("Descuento");
+        encabezado.createCell(11).setCellValue("Total Venta");
+        encabezado.createCell(12).setCellValue("Método Pago");
+        encabezado.createCell(13).setCellValue("Estado Pedido");
 
         int fila = 1;
 
         for (Venta venta : ventas) {
 
-            boolean primeraFilaVenta = true;
-
             for (DetalleVenta detalle : venta.getDetalles()) {
 
                 Row row = sheet.createRow(fila++);
 
-                row.createCell(0).setCellValue(venta.getId());
+                row.createCell(0).setCellValue(
+                        venta.getPedido().getId()
+                );
 
-                row.createCell(1).setCellValue(venta.getFecha().toString());
+                row.createCell(1).setCellValue(
+                        venta.getId()
+                );
 
-                row.createCell(2).setCellValue(venta.getVendedor().getNombre());
+                row.createCell(2).setCellValue(
+                        venta.getFecha().toString()
+                );
 
-                row.createCell(3).setCellValue(detalle.getProducto().getNombre());
+                row.createCell(3).setCellValue(
+                        venta.getPedido().getNombreCliente()
+                );
 
-                row.createCell(4).setCellValue(detalle.getProducto().getCategoria().getNombre());
+                row.createCell(4).setCellValue(
+                        venta.getVendedor().getNombre()
+                );
 
-                row.createCell(5).setCellValue(detalle.getCantidad());
+                row.createCell(5).setCellValue(
+                        detalle.getProducto().getNombre()
+                );
 
-                row.createCell(6).setCellValue(detalle.getPrecioUnitario());
+                row.createCell(6).setCellValue(
+                        detalle.getProducto()
+                                .getCategoria()
+                                .getNombre()
+                );
 
-                row.createCell(7).setCellValue(detalle.getSubtotal());
+                row.createCell(7).setCellValue(
+                        detalle.getCantidad()
+                );
 
-                if (primeraFilaVenta) {
-                    row.createCell(8).setCellValue(venta.getDescuento());
-                    row.createCell(9).setCellValue(venta.getTotal());
-                    row.createCell(10).setCellValue(venta.getMetodoPago());
+                row.createCell(8).setCellValue(
+                        detalle.getPrecioUnitario()
+                );
 
-                    primeraFilaVenta = false;
-                }
+                row.createCell(9).setCellValue(
+                        detalle.getSubtotal()
+                );
+
+                row.createCell(10).setCellValue(
+                        venta.getDescuento()
+                );
+
+                row.createCell(11).setCellValue(
+                        venta.getTotal()
+                );
+
+                row.createCell(12).setCellValue(
+                        venta.getMetodoPago()
+                );
+
+                row.createCell(13).setCellValue(
+                        venta.getPedido().getEstado()
+                );
             }
         }
 
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i <= 13; i++) {
             sheet.autoSizeColumn(i);
         }
     }
