@@ -50,4 +50,26 @@ public class PedidoServiceImpl implements PedidoService {
                 .map(pedidoMapper::responseModel)
                 .toList();
     }
+
+    @Transactional
+    @Override
+    public PedidoModelResponse cancelarPedido(Long id) {
+
+        Pedido pedido = pedidoRepository.findById(id).orElseThrow(() ->
+                        new ResourceNotFoundException("No se encontró el pedido con el id: " + id));
+
+        if ("ENTREGADO".equals(pedido.getEstado())) {
+            throw new BussinessException("No se puede cancelar un pedido que ya fue entregado");
+        }
+
+        if ("CANCELADO".equals(pedido.getEstado())) {
+            throw new BussinessException("El pedido ya fue cancelado");
+        }
+
+        pedido.setEstado("CANCELADO");
+
+        pedidoRepository.save(pedido);
+
+        return pedidoMapper.responseModel(pedido);
+    }
 }

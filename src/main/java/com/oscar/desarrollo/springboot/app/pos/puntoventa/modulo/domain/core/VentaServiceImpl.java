@@ -3,10 +3,7 @@ package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.core;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.*;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mapper.PedidoMapper;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mapper.VentaMapper;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.DetalleVentaModelRequest;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.PedidoModelResponse;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VentaModelRequest;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VentaModelResponse;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.*;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.VentaService;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.error.exception.BussinessException;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.error.exception.ResourceNotFoundException;
@@ -175,25 +172,26 @@ public class VentaServiceImpl implements VentaService {
 
     private int calcularDescuento(VentaModelRequest request, Vendedor vendedor, int subtotal) {
 
-        if (request.getVendedorDescuentoId() == null) {
+        if (request.getDescuentos() == null) {
             return 0;
         }
 
-        if (!request.getVendedorDescuentoId().equals(vendedor.getId())) {
-            return 0;
-        }
+        return request.getDescuentos()
+                .stream()
+                .filter(descuento -> descuento.getVendedorId() != null && descuento.getVendedorId().equals(vendedor.getId()))
+                .map(DescuentoModelRequest::getDescuento)
+                .findFirst()
+                .map(descuento -> {
+                    if (descuento < 0) {
+                        throw new BussinessException("El descuento no puede ser negativo");
+                    }
 
-        int descuento = (request.getDescuento() != null ? request.getDescuento() : 0);
-
-        if (descuento < 0) {
-            throw new BussinessException("El descuento no puede ser negativo");
-        }
-
-        if (descuento > subtotal) {
-            throw new BussinessException("El descuento no puede ser mayor al subtotal");
-        }
-
-        return descuento;
+                    if (descuento > subtotal) {
+                        throw new BussinessException("El descuento no puede ser mayor al subtotal");
+                    }
+                    return descuento;
+                })
+                .orElse(0);
     }
 }
 

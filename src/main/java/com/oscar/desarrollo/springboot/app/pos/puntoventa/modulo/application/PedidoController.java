@@ -28,4 +28,9 @@ public class PedidoController {
 
         return ResponseEntity.ok(pedidoService.listarPendientes());
     }
+
+    @PutMapping("/{id}/cancelar")
+    public PedidoModelResponse cancelarPedido(@PathVariable Long id) {
+        return pedidoService.cancelarPedido(id);
+    }
 }

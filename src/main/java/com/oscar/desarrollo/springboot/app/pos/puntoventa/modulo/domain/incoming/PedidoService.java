@@ -9,4 +9,6 @@ public interface PedidoService {
     PedidoModelResponse entregarPedido(Long id);
 
     List<PedidoModelResponse> listarPendientes();
+
+    PedidoModelResponse cancelarPedido(Long id);
 }
