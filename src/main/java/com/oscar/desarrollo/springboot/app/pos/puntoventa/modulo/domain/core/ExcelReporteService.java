@@ -1,9 +1,14 @@
 package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.core;
 
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.DetalleVenta;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Pedido;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Venta;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.springframework.stereotype.Service;
 
 import org.apache.poi.ss.usermodel.Workbook;
@@ -14,6 +19,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ExcelReporteService {
@@ -60,10 +67,15 @@ public class ExcelReporteService {
         encabezado.createCell(11).setCellValue("Total Venta");
         encabezado.createCell(12).setCellValue("Método Pago");
         encabezado.createCell(13).setCellValue("Estado Pedido");
+        encabezado.createCell(14).setCellValue("Estado Pago");
+        encabezado.createCell(15).setCellValue("Monto Pagado");
+        encabezado.createCell(16).setCellValue("Monto Pendiente");
 
         int fila = 1;
 
         for (Venta venta : ventas) {
+
+            Pedido pedido = venta.getPedido();
 
             for (DetalleVenta detalle : venta.getDetalles()) {
 
@@ -126,11 +138,48 @@ public class ExcelReporteService {
                 row.createCell(13).setCellValue(
                         venta.getPedido().getEstado()
                 );
+
+                int totalPedido = pedido.getVentas()
+                        .stream()
+                        .mapToInt(Venta::getTotal)
+                        .sum();
+
+                int montoPagado = pedido.getMontoPagado() != null ? pedido.getMontoPagado() : 0;
+
+                int montoPendiente = totalPedido - montoPagado;
+
+                row.createCell(14).setCellValue(
+                        pedido.getEstadoPago()
+                );
+
+                row.createCell(15).setCellValue(
+                        pedido.getMontoPagado()
+                );
+
+                row.createCell(16).setCellValue(montoPendiente);
             }
         }
 
-        for (int i = 0; i <= 13; i++) {
+        for (int i = 0; i <= 16; i++) {
             sheet.autoSizeColumn(i);
+        }
+
+        int ultimaFila = fila - 1;
+
+        if (ultimaFila >= 1) {
+
+            AreaReference area = workbook.getCreationHelper()
+                    .createAreaReference(
+                            new CellReference(0, 0),
+                            new CellReference(ultimaFila, 16)
+                    );
+
+            XSSFTable tabla = ((XSSFSheet) sheet).createTable(area);
+
+            tabla.setName("TablaDetalleVentas");
+            tabla.setDisplayName("TablaDetalleVentas");
+
+            tabla.getCTTable().addNewAutoFilter();
         }
     }
 
@@ -173,6 +222,64 @@ public class ExcelReporteService {
         total.createCell(0).setCellValue("TOTAL GENERAL");
 
         total.createCell(1).setCellValue(totalGeneral);
+
+        Set<Pedido> pedidos = ventas.stream()
+                .map(Venta::getPedido)
+                .collect(Collectors.toSet());
+
+        int totalPagado = 0;
+        int totalPendiente = 0;
+
+        for (Pedido pedido : pedidos) {
+
+            int montoPagado = pedido.getMontoPagado() != null
+                    ? pedido.getMontoPagado()
+                    : 0;
+
+            int totalPedido = pedido.getVentas()
+                    .stream()
+                    .mapToInt(Venta::getTotal)
+                    .sum();
+
+            int montoPendiente = totalPedido - montoPagado;
+
+            totalPagado += montoPagado;
+            totalPendiente += montoPendiente;
+        }
+
+        int filaPagos = fila + 3;
+
+        Row tituloPagos = sheet.createRow(filaPagos);
+
+        tituloPagos.createCell(0)
+                .setCellValue("RESUMEN DE PAGOS");
+
+
+        Row vendidoRow = sheet.createRow(filaPagos + 1);
+
+        vendidoRow.createCell(0)
+                .setCellValue("Total Vendido");
+
+        vendidoRow.createCell(1)
+                .setCellValue(totalGeneral);
+
+
+        Row pagadoRow = sheet.createRow(filaPagos + 2);
+
+        pagadoRow.createCell(0)
+                .setCellValue("Total Pagado");
+
+        pagadoRow.createCell(1)
+                .setCellValue(totalPagado);
+
+
+        Row pendienteRow = sheet.createRow(filaPagos + 3);
+
+        pendienteRow.createCell(0)
+                .setCellValue("Total Pendiente");
+
+        pendienteRow.createCell(1)
+                .setCellValue(totalPendiente);
 
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);

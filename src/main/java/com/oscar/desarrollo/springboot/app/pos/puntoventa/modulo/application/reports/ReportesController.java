@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/punto-venta/reporte")
@@ -21,14 +21,14 @@ public class ReportesController {
     ReporteService reporteService;
 
     @GetMapping("/ventas/excel")
-    public ResponseEntity<byte[]> generarReporte(@RequestParam LocalDate fecha) {
+    public ResponseEntity<byte[]> generarReporte(@RequestParam LocalDateTime inicio, @RequestParam LocalDateTime fin) {
 
-        byte[] archivo = reporteService.generarReporte(fecha);
+        byte[] archivo = reporteService.generarReporte(inicio, fin);
 
         return ResponseEntity.ok()
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=reporte-ventas-" + fecha + ".xlsx"
+                        "attachment; filename=reporte-ventas-" + inicio + fin + ".xlsx"
                 )
                 .contentType(
                         MediaType.parseMediaType(
