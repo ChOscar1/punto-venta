@@ -27,6 +27,12 @@ public class Pedido {
     @NotBlank
     private String estado;
 
+    @NotNull
+    private Integer montoPagado;
+
+    @NotBlank
+    private String estadoPago;
+
     @OneToMany(mappedBy = "pedido")
     private List<Venta> ventas = new ArrayList<>();
 }

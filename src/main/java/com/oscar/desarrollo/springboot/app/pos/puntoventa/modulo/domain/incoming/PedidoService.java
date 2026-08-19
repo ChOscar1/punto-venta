@@ -11,4 +11,6 @@ public interface PedidoService {
     List<PedidoModelResponse> listarPendientes();
 
     PedidoModelResponse cancelarPedido(Long id);
+
+    PedidoModelResponse registrarPago(Long id, Integer monto);
 }

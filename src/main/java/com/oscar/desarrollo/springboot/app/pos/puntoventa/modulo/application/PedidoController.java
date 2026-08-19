@@ -33,4 +33,9 @@ public class PedidoController {
     public PedidoModelResponse cancelarPedido(@PathVariable Long id) {
         return pedidoService.cancelarPedido(id);
     }
+
+    @PutMapping("/{id}/registrar-pago")
+    public PedidoModelResponse registrarPago(@PathVariable Long id, @RequestBody Integer monto) {
+        return pedidoService.registrarPago(id, monto);
+    }
 }

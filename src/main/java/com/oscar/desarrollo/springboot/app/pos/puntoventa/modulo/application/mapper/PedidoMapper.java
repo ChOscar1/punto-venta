@@ -29,10 +29,18 @@ public class PedidoMapper {
                         .toList();
 
         response.setVentas(ventas);
-        response.setTotal(ventas.stream()
-                        .mapToInt(VentaModelResponse::getTotal)
-                        .sum()
-        );
+
+        int total = ventas.stream()
+                .mapToInt(VentaModelResponse::getTotal)
+                .sum();
+
+        response.setTotal(total);
+
+        response.setMontoPagado(pedido.getMontoPagado());
+
+        response.setEstadoPago(pedido.getEstadoPago());
+
+        response.setMontoPendiente(total - pedido.getMontoPagado());
 
         return response;
     }

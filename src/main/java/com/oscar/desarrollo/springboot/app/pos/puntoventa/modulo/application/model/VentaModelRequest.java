@@ -19,4 +19,8 @@ public class VentaModelRequest {
     private List<DetalleVentaModelRequest> productos;
 
     private List<DescuentoModelRequest> descuentos;
+
+    private String estadoPago;
+
+    private Integer montoPagado;
 }

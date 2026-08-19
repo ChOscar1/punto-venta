@@ -45,46 +45,76 @@ public class VentaServiceImpl implements VentaService {
         Pedido pedido = new Pedido();
 
         pedido.setNombreCliente(request.getNombreCliente());
-        pedido.setFecha(
-                LocalDateTime.now(
-                        ZoneId.of("America/Mexico_City")
-                )
-        );
-        pedido.setEstado("PENDIENTE");
 
-        Pedido pedidoGuardado = pedidoRepository.save(pedido);
+        pedido.setFecha(LocalDateTime.now(ZoneId.of("America/Mexico_City")));
+
+        pedido.setEstado("PENDIENTE");
 
         Map<Long, List<DetalleVenta>> detallesPorVendedor = agruparDetallesPorVendedor(request);
 
+        int totalPedido = calcularTotalPedido(request, detallesPorVendedor);
+
+        configurarPago(pedido, request, totalPedido);
+
+        Pedido pedidoGuardado = pedidoRepository.save(pedido);
+
         crearVentas(request, detallesPorVendedor, pedidoGuardado);
+
+        //pedidoRepository.save(pedidoGuardado);
 
         return pedidoMapper.responseModel(pedidoGuardado);
     }
 
-/*    @Override
-    @Transactional
-    public VentaModelResponse entregarVenta(Long id) {
+    private void configurarPago(Pedido pedido, VentaModelRequest request, int totalPedido) {
 
-        Venta venta = ventaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No se encontró la venta con el id: " + id));
+        String estadoPago = request.getEstadoPago();
 
-        if (venta.getEstado().equals("Entregada")) {
-            throw new BussinessException("La venta ya fue entregada");
+        if (estadoPago == null || estadoPago.isBlank()) {
+            throw new BussinessException("Debes indicar el estado del pago");
         }
 
-        venta.setEstado("Entregada");
-        Venta guardarVenta = ventaRepository.save(venta);
-        return ventaMapper.responseModel(guardarVenta);
+        Integer montoPagado = request.getMontoPagado() != null ? request.getMontoPagado() : 0;
+
+        if (montoPagado < 0) {
+            throw new BussinessException("El monto pagado no puede ser negativo");
+        }
+
+        switch (estadoPago) {
+
+            case "SIN_PAGAR":
+
+                if (montoPagado != 0) {
+                    throw new BussinessException("Un pedido sin pagar debe tener monto pagado en 0");
+                }
+                pedido.setMontoPagado(0);
+                pedido.setEstadoPago("SIN_PAGAR");
+                break;
+
+            case "ANTICIPO":
+
+                if (montoPagado <= 0) {
+                    throw new BussinessException("El anticipo debe ser mayor a 0");
+                }
+
+                if (montoPagado >= totalPedido) {
+                    throw new BussinessException("El anticipo debe ser menor al total del pedido");
+                }
+                pedido.setMontoPagado(montoPagado);
+                pedido.setEstadoPago("ANTICIPO");
+                break;
+
+            case "PAGADO":
+
+                if (montoPagado != totalPedido) {throw new BussinessException("El monto pagado debe ser igual al total del pedido");
+                }
+                pedido.setMontoPagado(totalPedido);
+                pedido.setEstadoPago("PAGADO");
+                break;
+
+            default:
+                throw new BussinessException("Estado de pago no válido");
+        }
     }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<VentaModelResponse> listarPendientes() {
-
-        return ventaRepository.findByEstado("Pendiente")
-                .stream()
-                .map(ventaMapper::responseModel)
-                .toList();
-    }*/
 
     private Map<Long, List<DetalleVenta>> agruparDetallesPorVendedor(VentaModelRequest request) {
 
@@ -192,6 +222,27 @@ public class VentaServiceImpl implements VentaService {
                     return descuento;
                 })
                 .orElse(0);
+    }
+
+    private int calcularTotalPedido(VentaModelRequest request, Map<Long, List<DetalleVenta>> detallesPorVendedor) {
+
+        int totalPedido = 0;
+
+        for (List<DetalleVenta> detalles : detallesPorVendedor.values()) {
+
+            Vendedor vendedor = detalles.get(0)
+                    .getProducto()
+                    .getCategoria()
+                    .getVendedor();
+
+            int subtotalVenta = calcularSubtotal(detalles);
+
+            int descuento = calcularDescuento(request, vendedor, subtotalVenta);
+
+            totalPedido += subtotalVenta - descuento;
+        }
+
+        return totalPedido;
     }
 }
 

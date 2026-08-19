@@ -1,8 +1,8 @@
 package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface ReporteService {
 
-    byte[] generarReporte(LocalDate fecha);
+    byte[] generarReporte(LocalDateTime fechaInicio, LocalDateTime fechaFin);
 }

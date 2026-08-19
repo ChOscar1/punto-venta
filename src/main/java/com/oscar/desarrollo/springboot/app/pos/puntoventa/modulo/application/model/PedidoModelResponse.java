@@ -9,9 +9,21 @@ import java.util.List;
 public class PedidoModelResponse {
 
     private Long id;
+
     private LocalDateTime fecha;
+
     private String nombreCliente;
+
     private String estado;
+
     private List<VentaModelResponse> ventas;
+
     private Integer total;
+
+    private Integer montoPagado;
+
+    private String estadoPago;
+
+    private Integer montoPendiente;
+
 }

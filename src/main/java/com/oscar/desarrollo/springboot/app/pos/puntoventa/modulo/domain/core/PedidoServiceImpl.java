@@ -1,6 +1,7 @@
 package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.core;
 
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Pedido;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.Venta;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mapper.PedidoMapper;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.PedidoModelResponse;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.PedidoService;
@@ -72,4 +73,48 @@ public class PedidoServiceImpl implements PedidoService {
 
         return pedidoMapper.responseModel(pedido);
     }
+
+    @Override
+    @Transactional
+    public PedidoModelResponse registrarPago(Long id, Integer monto) {
+
+        Pedido pedido = pedidoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No se encontró el pedido con id: " + id));
+
+        if (monto == null || monto <= 0) {
+            throw new BussinessException("El monto del pago debe ser mayor a 0");
+        }
+
+        int totalPedido = pedido.getVentas()
+                .stream()
+                .mapToInt(Venta::getTotal)
+                .sum();
+
+        int montoPagadoActual = pedido.getMontoPagado() != null ? pedido.getMontoPagado() : 0;
+
+        int montoPendiente = totalPedido - montoPagadoActual;
+
+        if (monto > montoPendiente) {
+            throw new BussinessException("El pago no puede ser mayor al monto pendiente");
+        }
+
+        int nuevoMontoPagado = montoPagadoActual + monto;
+
+        int nuevoMontoPendiente = totalPedido - nuevoMontoPagado;
+
+        pedido.setMontoPagado(nuevoMontoPagado);
+
+        if (nuevoMontoPendiente == 0) {
+
+            pedido.setEstadoPago("PAGADO");
+
+        } else {
+
+            pedido.setEstadoPago("ANTICIPO");
+        }
+
+        Pedido pedidoGuardado = pedidoRepository.save(pedido);
+
+        return pedidoMapper.responseModel(pedidoGuardado);
+    }
 }
+
