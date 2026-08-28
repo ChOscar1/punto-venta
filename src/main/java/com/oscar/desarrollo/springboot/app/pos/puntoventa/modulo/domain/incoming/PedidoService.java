@@ -1,5 +1,6 @@
 package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming;
 
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.ModificarPedidoRequest;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.PedidoModelResponse;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface PedidoService {
     PedidoModelResponse cancelarPedido(Long id);
 
     PedidoModelResponse registrarPago(Long id, Integer monto);
+
+    PedidoModelResponse modificarPedido(Long id, ModificarPedidoRequest request);
 }

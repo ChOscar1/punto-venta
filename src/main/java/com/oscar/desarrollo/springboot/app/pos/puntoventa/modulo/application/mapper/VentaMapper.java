@@ -1,10 +1,7 @@
 package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.mapper;
 
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.entity.*;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.DetalleVentaModelRequest;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.DetalleVentaResponse;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VentaModelRequest;
-import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.VentaModelResponse;
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.*;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -60,10 +57,25 @@ public class VentaMapper {
         return detalle;
     }
 
+    public DetalleVenta detalleVentaModificarMapper(Producto producto, ModificarDetalleVentaRequest item, Venta venta) {
+
+        DetalleVenta detalle = new DetalleVenta();
+
+        detalle.setVenta(venta);
+        detalle.setProducto(producto);
+        detalle.setCantidad(item.getCantidad());
+        detalle.setPrecioUnitario(producto.getPrecio());
+
+        detalle.setSubtotal(producto.getPrecio() * item.getCantidad());
+
+        return detalle;
+    }
+
     private DetalleVentaResponse detalleResponse(DetalleVenta detalle) {
 
         DetalleVentaResponse response = new DetalleVentaResponse();
 
+        response.setProductoId(detalle.getProducto().getId());
         response.setProducto(detalle.getProducto().getNombre());
         response.setCantidad(detalle.getCantidad());
         response.setPrecioUnitario(detalle.getPrecioUnitario());

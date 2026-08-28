@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class DetalleVentaResponse {
 
+    private Long productoId;
+
     private String producto;
 
     private Integer cantidad;

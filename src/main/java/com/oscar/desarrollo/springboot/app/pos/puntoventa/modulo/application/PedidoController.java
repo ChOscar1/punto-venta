@@ -1,5 +1,6 @@
 package com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application;
 
+import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.ModificarPedidoRequest;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.application.model.PedidoModelResponse;
 import com.oscar.desarrollo.springboot.app.pos.puntoventa.modulo.domain.incoming.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,5 +38,13 @@ public class PedidoController {
     @PutMapping("/{id}/registrar-pago")
     public PedidoModelResponse registrarPago(@PathVariable Long id, @RequestBody Integer monto) {
         return pedidoService.registrarPago(id, monto);
+    }
+
+    @PutMapping("/{id}/modificar")
+    public ResponseEntity<PedidoModelResponse> modificarPedido(@PathVariable Long id, @RequestBody ModificarPedidoRequest request) {
+
+        return ResponseEntity.ok(
+                pedidoService.modificarPedido(id, request)
+        );
     }
 }
