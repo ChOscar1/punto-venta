@@ -157,7 +157,7 @@ public class PedidoServiceImpl implements PedidoService {
             venta.getDetalles().clear();
 
             int subtotal = 0;
-g
+
             for (ModificarDetalleVentaRequest detalleRequest : ventaRequest.getProductos()) {
 
                 Producto producto = productoRepository.findById(detalleRequest.getProductoId())
